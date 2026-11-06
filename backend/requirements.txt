@@ -1,0 +1,15 @@
+sqlalchemy
+psycopg2-binary
+pydantic-settings
+python-dotenv
+fastapi
+uvicorn
+dnspython
+passlib[bcrypt]==1.7.4
+bcrypt>=4.0.1,<4.1
+python-jose[cryptography]>=3.5.0,<4
+email-validator
+PyMuPDF
+python-multipart
+google-genai
+sentence-transformers
