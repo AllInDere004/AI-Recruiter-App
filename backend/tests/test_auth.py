@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-from jose import jwt
+import jwt
 from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
@@ -96,7 +96,7 @@ class AuthenticationTests(unittest.TestCase):
         future = datetime.now(timezone.utc) + timedelta(minutes=5)
         tokens = [
             create_access_token({"sub": "person@example.com"}, timedelta(seconds=-5)),
-            jwt.encode({"sub": "person@example.com", "exp": future}, "wrong-signing-key", algorithm="HS256"),
+            jwt.encode({"sub": "person@example.com", "exp": future}, "wrong-signing-key-" + "x" * 64, algorithm="HS256"),
             jwt.encode({"sub": "person@example.com", "exp": future}, settings.JWT_SECRET_KEY, algorithm="HS384"),
             jwt.encode({"sub": "person@example.com"}, settings.JWT_SECRET_KEY, algorithm="HS256"),
             create_access_token({}),

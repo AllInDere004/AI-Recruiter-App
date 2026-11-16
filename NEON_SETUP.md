@@ -1,6 +1,6 @@
 # Neon and the FastAPI app
 
-The current frontend uses FastAPI at `http://localhost:8001`; FastAPI accesses Neon
+The current frontend uses FastAPI at `http://127.0.0.1:8002`; FastAPI accesses Neon
 through SQLAlchemy and psycopg2. The frontend does not query Postgres directly.
 See [backend/README.md](backend/README.md) for API, model, and test instructions.
 
@@ -19,14 +19,14 @@ variable. Restart running servers after changing settings.
 ```powershell
 # From backend/:
 python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8001
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8002
 
 # In another terminal, from the repository root:
 npm install
 npm run dev
 ```
 
-`frontend/.env.local` must contain `NEXT_PUBLIC_API_URL=http://localhost:8001`.
+`frontend/.env.local` must contain `NEXT_PUBLIC_API_URL=http://127.0.0.1:8002`.
 For a production server, run `npm run build` and then `npm start`.
 Register a FastAPI account, sign in, upload a resume, then analyze a job and generate
 an email. The returned draft is already saved. Review edits use PUT; the tracker

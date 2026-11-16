@@ -10,6 +10,7 @@ from app.schemas.job import JobCreate, JobResponse
 from app.services.auth_service import get_current_user
 from app.services.job_analyzer import analyze_job_description
 from app.services.llm_client import LLMConfigurationError, LLMError
+from app.services.ai_usage import enforce_ai_usage
 
 
 router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
 
 @router.post("/analyze", response_model=JobResponse)
 def analyze_job(job_in: JobCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    enforce_ai_usage(db, current_user.id)
     try:
         analysis = analyze_job_description(job_in.description)
     except LLMConfigurationError as error:

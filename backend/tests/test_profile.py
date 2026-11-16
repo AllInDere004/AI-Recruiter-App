@@ -94,6 +94,15 @@ class ResumeAndProfileAPITests(unittest.TestCase):
         self.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
         self.engine_patch = patch.object(main, "engine", self.engine)
         self.engine_patch.start()
+        # Phase 1 profile behavior must not depend on feature flags from a
+        # developer's effective local environment.
+        self.feature_patches = [
+            patch.object(settings, "ENABLE_CAREER_INTELLIGENCE", False),
+            patch.object(settings, "ENABLE_JOB_DISCOVERY", False),
+            patch.object(settings, "ENABLE_ADVANCED_FEATURES", False),
+        ]
+        for feature_patch in self.feature_patches:
+            feature_patch.start()
         self.key_patch = patch.object(settings, "LLM_API_KEY", "test-key")
         self.key_patch.start()
         self.gemini_patch = patch("app.services.llm_client.genai.Client")
@@ -124,6 +133,8 @@ class ResumeAndProfileAPITests(unittest.TestCase):
         main.app.dependency_overrides.update(self.overrides)
         self.gemini_patch.stop()
         self.key_patch.stop()
+        for feature_patch in reversed(self.feature_patches):
+            feature_patch.stop()
         self.engine_patch.stop()
         self.engine.dispose()
 

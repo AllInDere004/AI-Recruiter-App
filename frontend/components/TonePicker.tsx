@@ -6,6 +6,16 @@ import { Check } from "lucide-react";
 
 export const TONE_OPTIONS: ToneOption[] = [
   {
+    key: "concise", label: "Concise",
+    description: "Brief, direct, and focused on relevant verified experience.",
+    example: "I am interested in the role and would welcome a conversation.",
+  },
+  {
+    key: "enthusiastic", label: "Enthusiastic",
+    description: "Positive interest grounded in your actual skills and projects.",
+    example: "I am excited to contribute my experience to this opportunity.",
+  },
+  {
     key: "professional",
     label: "Professional",
     description: "Traditional, polished, respectful corporate etiquette.",

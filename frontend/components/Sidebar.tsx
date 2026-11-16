@@ -16,6 +16,9 @@ import {
   Menu,
   X,
   GraduationCap,
+  Search,
+  MessagesSquare,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -46,6 +49,11 @@ export function Sidebar() {
       icon: LayoutDashboard,
     },
     {
+      label: "Job Discovery",
+      href: "/jobs",
+      icon: Search,
+    },
+    {
       label: "New Email",
       href: "/new-email",
       icon: MailPlus,
@@ -55,6 +63,16 @@ export function Sidebar() {
       label: "Application Tracker",
       href: "/tracker",
       icon: KanbanSquare,
+    },
+    {
+      label: "Interview Practice",
+      href: "/interviews",
+      icon: MessagesSquare,
+    },
+    {
+      label: "Career Analytics",
+      href: "/analytics",
+      icon: BarChart3,
     },
     {
       label: "Profile",

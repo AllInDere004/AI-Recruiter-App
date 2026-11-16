@@ -65,8 +65,8 @@ async function main() {
     const generation = page.waitForResponse(r => r.url().endsWith("/api/email/generate") && r.request().method() === "POST");
     await page.getByRole("button", { name: "Generate Factual Recruiter Email" }).click();
     const response = await generation;
-    assert.equal(response.status(), 200);
     const generated = await response.json();
+    assert.equal(response.status(), 200, generated.detail || "Email generation failed");
     assert.equal(typeof generated.draft_id, "number");
     await expect(page.getByText("Review candidate availability before sending.")).toBeVisible();
     await page.getByRole("textbox", { name: "Subject line", exact: true }).fill("Reviewed outreach");
@@ -75,7 +75,7 @@ async function main() {
     await page.getByRole("button", { name: "Save to Tracker", exact: true }).click();
     await page.waitForURL("**/tracker");
     await expect(page.getByText("Reviewed outreach", { exact: true })).toBeVisible();
-    console.log("PASS job analysis error handling, real semantic matching, generated warnings, and saved-draft editing");
+    console.log("PASS job analysis error handling, semantic matching flow, generated warnings, and saved-draft editing");
 
     const status = page.getByRole("combobox", { name: `Status for draft ${generated.draft_id}`, exact: true });
     const update = page.waitForResponse(r => r.url().endsWith(`/api/drafts/${generated.draft_id}`) && r.request().method() === "PUT");

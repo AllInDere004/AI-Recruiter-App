@@ -26,6 +26,12 @@ class SettingsTests(unittest.TestCase):
 
     def test_key_is_hidden_from_settings_repr(self):
         self.assertNotIn("synthetic-key", repr(self.load(GEMINI_API_KEY="synthetic-key")))
+        self.assertNotIn("himalayas-test-key", repr(self.load(HIMALAYAS_API_KEY="himalayas-test-key")))
+
+    def test_himalayas_is_the_default_job_provider(self):
+        config = self.load(HIMALAYAS_API_KEY="himalayas-test-key")
+        self.assertEqual(config.JOB_PROVIDER, "himalayas")
+        self.assertTrue(config.HIMALAYAS_API_KEY == "himalayas-test-key")
 
     def test_dotenv_alias_is_loaded_outside_working_directory(self):
         with TemporaryDirectory() as directory:
@@ -42,3 +48,14 @@ class SettingsTests(unittest.TestCase):
             with patch.dict(os.environ, {"GEMINI_API_KEY": "runtime-test"}, clear=True):
                 config = Settings(_env_file=env)
             self.assertTrue(config.LLM_API_KEY == "runtime-test")
+
+    def test_production_rejects_insecure_runtime_combination(self):
+        config = self.load(ENVIRONMENT="production", JWT_SECRET_KEY="short", FORCE_HTTPS=False)
+        with self.assertRaisesRegex(RuntimeError, "Unsafe production configuration"):
+            config.validate_runtime()
+
+    def test_csv_origin_and_host_parsing(self):
+        config = self.load(CORS_ORIGINS="https://app.example, https://admin.example",
+                           ALLOWED_HOSTS="api.example, health.example")
+        self.assertEqual(config.cors_origins, ["https://app.example", "https://admin.example"])
+        self.assertEqual(config.allowed_hosts, ["api.example", "health.example"])

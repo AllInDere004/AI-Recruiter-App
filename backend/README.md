@@ -4,7 +4,7 @@ Run commands from this directory:
 
 ```powershell
 python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8001
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8002
 ```
 
 Keep your backend settings in `backend/.env`. Set `DATABASE_URL`, `JWT_SECRET_KEY`, and
@@ -110,7 +110,7 @@ MiniLM embedding path separately.
 
 ## Next.js integration
 
-The frontend uses `NEXT_PUBLIC_API_URL=http://localhost:8001` in
+The frontend uses `NEXT_PUBLIC_API_URL=http://127.0.0.1:8002` in
 `frontend/.env.local`, and calls the FastAPI `/api/...` endpoints directly.
 Bearer JWTs are stored under `ai_recruiter_token`; registration returns a user and
 redirects to sign-in, while login obtains a token and fetches `/api/auth/me`.
@@ -126,3 +126,95 @@ The older Next.js `/api` implementation is not used by this frontend client.
 
 Run the frontend with `npm run dev` from the repository root. Restart Next.js after
 changing `NEXT_PUBLIC_API_URL` (rebuild when using a production server).
+
+## Phase 2 career intelligence
+
+See [the implementation/test report](../PHASE2_REPORT.md) and
+[development migration verification](../PHASE2_MIGRATION_TEST.md).
+The additive SQL proposal is in `migrations/002_career_intelligence.sql`.
+Ordinary PostgreSQL startup performs no schema creation or alteration.
+
+`ENABLE_CAREER_INTELLIGENCE` defaults to false. Do not enable it on production
+until the migration has a verified backup/restore checkpoint and explicit approval.
+Existing profile, job, matching, email, draft and tracker routes continue working
+without the new tables. The older root `db:migrate` command manages recruiter tables
+and does not apply the new FastAPI migration.
+
+All new routes are authenticated under `/api/intelligence`: status, reviewed
+resume snapshots, saved reports, document versions, and approved PDF/DOCX exports.
+Scoring uses deterministic source evidence, not the LLM. Original resume text
+remains unchanged by tailoring; history and downloads stay private.
+The optional development test server uses temporary SQLite and mocked Gemini.
+See the report for its isolated startup commands and both browser test commands.
+
+`AI_REQUESTS_PER_MINUTE` defaults to 30 for existing Gemini-backed routes.
+`CAREER_AI_REQUESTS_PER_MINUTE` defaults to 6 for new AI document/guidance requests.
+
+## Phase 3 job discovery and applications
+
+Phase 3 is feature-gated and requires both reviewed migrations in order:
+
+1. `migrations/002_career_intelligence.sql`
+2. `migrations/003_smart_job_discovery.sql`
+
+Application startup never executes either migration. Keep the feature disabled until
+both migrations have passed on a Neon development branch and production activation has
+a verified backup/restore checkpoint plus explicit approval.
+
+Server-side environment variable names (store values only in the existing ignored
+`.env` files; never expose them through `NEXT_PUBLIC_*` variables):
+
+```dotenv
+ENABLE_JOB_DISCOVERY=false
+JOB_PROVIDER=himalayas
+HIMALAYAS_API_KEY=
+HIMALAYAS_API_BASE_URL=https://himalayas.app/jobs/api
+JOB_SEARCH_REQUESTS_PER_MINUTE=10
+JOB_IMPORT_REQUESTS_PER_MINUTE=5
+JOB_PROVIDER_TIMEOUT_SECONDS=12
+JOB_IMPORT_MAX_BYTES=2000000
+REMINDER_WORKER_TOKEN=
+```
+
+Himalayas is the default live-search provider. The upstream public API permits
+anonymous access, but this application requires `HIMALAYAS_API_KEY` so it never relies
+on the shared anonymous allowance. The key is sent only from the backend as a Bearer
+token. An absent key produces an explicit provider-not-configured response; it never
+enables fixtures as live jobs. The legacy Jooble adapter remains available only when
+an existing deployment explicitly selects `JOB_PROVIDER=jooble` and supplies its
+existing Jooble settings.
+
+The durable reminder worker contract is:
+
+```text
+POST /api/applications/internal/process-reminders
+X-Reminder-Worker-Token: <REMINDER_WORKER_TOKEN>
+```
+
+The token must be a long random server-side value. Configure an existing hosting cron
+to call the endpoint over HTTPS. No cron, queue, Neon Function, email provider, or paid
+service is deployed automatically. Authenticated users also process their own due
+in-app reminders when loading the tracker/dashboard; this improves UX but is not a
+substitute for the durable deployment trigger.
+Limits are per authenticated user and server process; multiple application
+instances need shared quota enforcement. Neither setting changes provider billing.
+
+## Phase 4 advanced features
+
+Migration `migrations/004_advanced_features.sql` is additive and must follow `002`
+and `003`. `ENABLE_ADVANCED_FEATURES` defaults to false. Interview practice,
+notification preferences, Gmail integration, advanced analytics, and administration
+remain unavailable until the migration is reviewed and the feature is enabled for
+that environment. Application startup never applies the migration.
+
+Runtime configuration names are `ENVIRONMENT`, `CORS_ORIGINS`, `ALLOWED_HOSTS`,
+`FORCE_HTTPS`, `ENABLE_ADVANCED_FEATURES`, `INTERVIEW_AI_REQUESTS_PER_MINUTE`, and
+`INTERVIEW_MAX_ANSWER_CHARS`. Optional Gmail names are `ENABLE_GMAIL`,
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`,
+`GMAIL_TOKEN_ENCRYPTION_KEY`, and `OAUTH_STATE_TTL_MINUTES`. Keep all values in the
+server-side secret store; none belong in a `NEXT_PUBLIC_*` variable.
+
+Production startup validates HTTPS, explicit origins/hosts, PostgreSQL, a strong JWT
+key, and complete Gmail settings when Gmail is enabled. Use `/live` for process
+liveness and `/ready` for database readiness. See `../DEPLOYMENT.md` and
+`../PRODUCTION_READINESS.md` before promoting an environment.

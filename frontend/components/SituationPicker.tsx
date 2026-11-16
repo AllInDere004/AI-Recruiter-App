@@ -17,6 +17,11 @@ import { Badge } from "./ui/badge";
 
 export const SITUATION_OPTIONS: SituationOption[] = [
   {
+    key: "internship", title: "Internship application",
+    description: "Connect verified coursework, skills, and projects to an internship.",
+    badge: "Student opportunities", iconName: "Sparkles",
+  },
+  {
     key: "apply",
     title: "1. Apply for a Job",
     description: "Standard application email + concise cover letter highlighting verified project evidence.",

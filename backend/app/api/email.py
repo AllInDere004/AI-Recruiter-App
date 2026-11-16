@@ -13,6 +13,7 @@ from app.services.auth_service import get_current_user
 from app.services.email_generator import generate_email
 from app.services.hallucination_check import verify_email_facts
 from app.services.llm_client import LLMConfigurationError, LLMError
+from app.services.ai_usage import enforce_ai_usage
 
 
 router = APIRouter(prefix="/api/email", tags=["Email"])
@@ -28,6 +29,7 @@ def generate(req: EmailGenerateRequest, db: Session = Depends(get_db), current_u
         raise HTTPException(status_code=404, detail="Profile not found. Upload a resume before generating email.")
     if not profile.raw_resume_text.strip() or not job.description.strip():
         raise HTTPException(status_code=422, detail="Resume text and job description cannot be blank.")
+    enforce_ai_usage(db, current_user.id)
     try:
         email = generate_email(profile.raw_resume_text, job.description, req.situation, req.tone, req.custom_notes or "")
         warnings = verify_email_facts(profile.raw_resume_text, email["subject_line"] + "\n" + email["body"])

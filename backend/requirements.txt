@@ -7,9 +7,11 @@ uvicorn
 dnspython
 passlib[bcrypt]==1.7.4
 bcrypt>=4.0.1,<4.1
-python-jose[cryptography]>=3.5.0,<4
+PyJWT>=2.10,<3
 email-validator
 PyMuPDF
 python-multipart
 google-genai
 sentence-transformers
+tzdata>=2025.2
+cryptography>=50,<51

@@ -2,6 +2,7 @@ import type { Draft, DraftWithJob, Job, ParsedData, Profile } from "@/types";
 export function parsedProfile(profile: Profile): ParsedData {
   const data = profile.parsed_data || {};
   return {
+    ...data,
     full_name: profile.full_name ?? (typeof data.full_name === "string" ? data.full_name : null),
     email: typeof data.email === "string" ? data.email : null,
     phone: typeof data.phone === "string" ? data.phone : null,

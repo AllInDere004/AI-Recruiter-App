@@ -1,11 +1,61 @@
-node_modules/
-.next/
+# Environment files and local credentials. Safe templates are explicitly allowed.
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
-!.env.local.example
-**/.preview-*/
+!**/.env.example
+
+# Python environments, caches, coverage, and build output.
+.venv/
+venv/
+**/.venv/
+**/venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Node / Next.js dependencies, caches, and build output.
+node_modules/
+.next/
+.next-*/
+out/
+coverage/
 *.tsbuildinfo
 
-.next-*/
-__pycache__/
+# Logs, temporary files, local databases, and previews.
+*.log
+*.tmp
+*.temp
+*.swp
+*.sqlite
+*.sqlite3
+.cache/
+**/.preview-*/
+frontend/preview*.png
+frontend/dashboard-preview*.png
+
+# Private keys and provider credential exports.
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+service-account*.json
+
+# Machine-local tooling and editor state.
+.agents/
+.neon
+skills-lock.json
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

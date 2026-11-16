@@ -8,6 +8,7 @@ from app.models.profile import Profile
 from app.models.user import User
 from app.schemas.profile import ProfileResponse, ProfileUpdate
 from app.services.auth_service import get_current_user
+from app.services.career_repository import optional_snapshot, preserve_original
 
 
 router = APIRouter(prefix="/api/profile", tags=["Profile"])
@@ -32,10 +33,12 @@ def update_profile(
     current_user: User = Depends(get_current_user),
 ):
     profile = _get_profile(db, current_user.id)
+    preserve_original(db, current_user.id)
     for field, value in update.model_dump(exclude_unset=True).items():
         setattr(profile, field, value)
     profile.updated_at = datetime.now(timezone.utc)
     try:
+        optional_snapshot(db, current_user.id, approved=True)
         db.commit()
     except Exception:
         db.rollback()

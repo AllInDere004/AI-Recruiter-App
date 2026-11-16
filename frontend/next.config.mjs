@@ -6,4 +6,8 @@ dotenv.config({ path: fileURLToPath(new URL("../backend/.env", import.meta.url))
 dotenv.config({ path: fileURLToPath(new URL("../.env.local", import.meta.url)), quiet: true });
 dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)), quiet: true });
 
-export default { distDir: process.env.NEXT_DIST_DIR || ".next" };
+export default {
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+  output: "standalone",
+  poweredByHeader: false,
+};

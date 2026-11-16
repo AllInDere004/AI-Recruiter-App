@@ -3,7 +3,8 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -57,13 +58,13 @@ def get_current_user(
             token,
             settings.JWT_SECRET_KEY,
             algorithms=[ALGORITHM],
-            options={"require_exp": True, "require_sub": True},
+            options={"require": ["exp", "sub"]},
         )
         email = payload.get("sub")
         if not isinstance(email, str) or not email:
             raise credentials_exception
         token_data = TokenData(email=email)
-    except JWTError:
+    except InvalidTokenError:
         raise credentials_exception from None
 
     user = db.query(User).filter(User.email == token_data.email, User.is_active.is_(True)).first()
