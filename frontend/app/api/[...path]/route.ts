@@ -28,12 +28,12 @@ const draftFields = z.object({
   situation: z.enum(["apply", "cold_email", "follow_up", "thank_you", "referral", "career_switcher", "recruiter_reply"]),
   tone: z.enum(["formal", "friendly", "confident", "short"]),
   subject: z.string().max(1000), body: z.string().max(100000), score: z.number().min(0).max(100),
-  score_breakdown: z.record(z.unknown()),
+  score_breakdown: z.record(z.string(), z.unknown()),
   status: z.enum(["Draft", "Sent", "Replied", "Interview", "Rejected"]),
   version: z.number().int().min(1), parent_draft_id: z.string().nullable().optional(),
   sent_at: z.string().datetime().nullable().optional(), follow_up_due: z.boolean().optional(),
-  matching_points: z.array(z.record(z.unknown())).optional(),
-  hallucination_check: z.record(z.unknown()).optional(),
+  matching_points: z.array(z.record(z.string(), z.unknown())).optional(),
+  hallucination_check: z.record(z.string(), z.unknown()).optional(),
 });
 class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -63,9 +63,10 @@ async function authenticated(request: NextRequest) {
   if (!result.rows[0]) throw new ApiError(401, "Session expired. Please sign in again.");
   return result.rows[0];
 }
-async function handle(request: NextRequest, { params }: { params: { path: string[] } }) {
+async function handle(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
-    const path = params.path.join("/");
+    const { path: segments } = await params;
+    const path = segments.join("/");
     const method = request.method;
     if (path === "health" && method === "GET") {
       await database().query("SELECT 1");
@@ -149,8 +150,8 @@ async function handle(request: NextRequest, { params }: { params: { path: string
       const result = await database().query("SELECT data_json FROM recruiter_jobs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 500", [user.id]);
       return json(result.rows.map(row => row.data_json));
     }
-    if (params.path[0] === "jobs" && params.path.length === 2 && method === "GET") {
-      const result = await database().query("SELECT data_json FROM recruiter_jobs WHERE id = $1 AND user_id = $2", [params.path[1], user.id]);
+    if (segments[0] === "jobs" && segments.length === 2 && method === "GET") {
+      const result = await database().query("SELECT data_json FROM recruiter_jobs WHERE id = $1 AND user_id = $2", [segments[1], user.id]);
       if (!result.rows[0]) throw new ApiError(404, "Job not found.");
       return json(result.rows[0].data_json);
     }
@@ -173,8 +174,8 @@ async function handle(request: NextRequest, { params }: { params: { path: string
       if (!result.rows[0]) throw new ApiError(409, "Draft ID is already in use.");
       return json(result.rows[0].data_json, 201);
     }
-    if (params.path[0] === "drafts" && params.path.length === 2) {
-      const id = params.path[1];
+    if (segments[0] === "drafts" && segments.length === 2) {
+      const id = segments[1];
       const found = await database().query("SELECT d.data_json || jsonb_build_object('job', j.data_json) AS data_json FROM recruiter_drafts d JOIN recruiter_jobs j ON j.id = d.job_id AND j.user_id = d.user_id WHERE d.id = $1 AND d.user_id = $2", [id, user.id]);
       if (!found.rows[0]) throw new ApiError(404, "Draft not found.");
       if (method === "GET") return json(found.rows[0].data_json);
