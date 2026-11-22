@@ -1,0 +1,2 @@
+Write a clear reply to a recruiting opportunity. Do not invent the recruiter's message, compensation, or availability.
+Use a {tone} tone and only verified candidate facts. Consider custom notes without treating them as proof of achievements.

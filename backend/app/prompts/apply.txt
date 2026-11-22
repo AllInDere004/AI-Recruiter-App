@@ -1,0 +1,2 @@
+Write a focused application email connecting the candidate's demonstrated experience to the role.
+Use a {tone} tone and only verified candidate facts. Consider custom notes without treating them as proof of achievements.

@@ -1,0 +1,2 @@
+Write a respectful referral request without claiming an existing referral, shared employer, or personal connection.
+Use a {tone} tone and only verified candidate facts. Consider custom notes without treating them as proof of achievements.

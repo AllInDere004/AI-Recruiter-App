@@ -1,0 +1,23 @@
+{
+  "name": "ai-recruiter-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev --",
+    "build": "npm --prefix frontend run build --",
+    "start": "npm --prefix frontend run start --",
+    "lint": "npm --prefix frontend run lint --",
+    "postinstall": "npm --prefix frontend install",
+    "db:migrate": "node frontend/scripts/migrate.cjs",
+    "test:neon": "node frontend/scripts/test-neon.cjs",
+    "test:neon:browser": "node frontend/scripts/test-neon-browser.cjs",
+    "test:fastapi:browser": "node frontend/scripts/test-fastapi-browser.cjs",
+    "test:career:browser": "node frontend/scripts/test-career-browser.cjs",
+    "test:phase3:browser": "node frontend/scripts/test-phase3-browser.cjs",
+    "test:phase4:browser": "node frontend/scripts/test-phase4-browser.cjs"
+  },
+  "dependencies": {
+    "@neon/config": "^1.11.3",
+    "@neon/env": "^1.6.15"
+  }
+}
